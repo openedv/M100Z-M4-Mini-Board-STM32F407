@@ -1,0 +1,10 @@
+09:31:20 **** Incremental Build of configuration Debug for project 33_1_dsp_basicmath ****
+make -j16 all 
+arm-none-eabi-size  33_1_dsp_basicmath.elf 
+   text	   data	    bss	    dec	    hex	filename
+  70368	    480	   2360	  73208	  11df8	33_1_dsp_basicmath.elf
+Finished building: default.size.stdout
+ 
+
+09:31:22 Build Finished. 0 errors, 0 warnings. (took 1s.543ms)
+

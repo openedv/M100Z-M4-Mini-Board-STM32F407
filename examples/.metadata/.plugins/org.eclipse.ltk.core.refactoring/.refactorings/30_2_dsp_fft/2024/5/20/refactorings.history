@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">&#x0A;<refactoring comment="Rename resource &apos;30_2_dsp_fft/33_2_dsp_fft.ioc&apos; to &apos;30_2_dsp_fft.ioc&apos;" description="Rename resource &apos;33_2_dsp_fft.ioc&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="33_2_dsp_fft.ioc" name="30_2_dsp_fft.ioc" stamp="1715671485136" updateReferences="true"/>&#x0A;<refactoring comment="Rename resource &apos;30_2_dsp_fft/30_1_dsp_basicmath.ioc&apos; to &apos;30_2_dsp_fft.ioc&apos;" description="Rename resource &apos;30_1_dsp_basicmath.ioc&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="30_1_dsp_basicmath.ioc" name="30_2_dsp_fft.ioc" stamp="1715860141886" updateReferences="true"/>
+</session>

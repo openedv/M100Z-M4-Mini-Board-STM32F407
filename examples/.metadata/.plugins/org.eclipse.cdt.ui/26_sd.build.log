@@ -1,0 +1,10 @@
+11:18:06 **** Incremental Build of configuration Debug for project 26_sd ****
+make -j16 all 
+arm-none-eabi-size  26_sd.elf 
+   text	   data	    bss	    dec	    hex	filename
+  57268	    148	 122240	 179656	  2bdc8	26_sd.elf
+Finished building: default.size.stdout
+ 
+
+11:18:07 Build Finished. 0 errors, 0 warnings. (took 1s.556ms)
+

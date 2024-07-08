@@ -1,0 +1,7 @@
+../ATK_Middlewares/USMART/usmart.c:44:9:usmart_sys_cmd_exe	56	static
+../ATK_Middlewares/USMART/usmart.c:221:6:usmart_init	16	static
+../ATK_Middlewares/USMART/usmart.c:234:9:usmart_cmd_rec	88	static
+../ATK_Middlewares/USMART/usmart.c:281:6:usmart_exe	152	static
+../ATK_Middlewares/USMART/usmart.c:406:6:usmart_scan	24	static
+../ATK_Middlewares/USMART/usmart.c:458:10:read_addr	16	static
+../ATK_Middlewares/USMART/usmart.c:469:6:write_addr	16	static

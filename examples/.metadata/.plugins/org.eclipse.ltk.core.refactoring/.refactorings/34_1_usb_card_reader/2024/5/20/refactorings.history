@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;34_1_usb_card_reader/36_usb_card_reader.ioc&apos; to &apos;34_1_usb_card_reader.ioc&apos;" description="Rename resource &apos;36_usb_card_reader.ioc&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="36_usb_card_reader.ioc" name="34_1_usb_card_reader.ioc" stamp="1715682111578" updateReferences="true"/>
+</session>

@@ -1,0 +1,8 @@
+../Middlewares/Third_Party/FatFs/exfuns/exfuns.c:57:9:exfuns_init	5
+../Middlewares/Third_Party/FatFs/exfuns/exfuns.c:88:9:exfuns_char_upper	3
+../Middlewares/Third_Party/FatFs/exfuns/exfuns.c:109:9:exfuns_file_type	12
+../Middlewares/Third_Party/FatFs/exfuns/exfuns.c:167:9:exfuns_get_free	2
+../Middlewares/Third_Party/FatFs/exfuns/exfuns.c:219:9:exfuns_file_copy	15
+../Middlewares/Third_Party/FatFs/exfuns/exfuns.c:310:10:exfuns_get_src_dname	5
+../Middlewares/Third_Party/FatFs/exfuns/exfuns.c:334:10:exfuns_get_folder_size	13
+../Middlewares/Third_Party/FatFs/exfuns/exfuns.c:432:9:exfuns_folder_copy	16

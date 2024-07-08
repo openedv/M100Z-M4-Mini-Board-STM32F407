@@ -1,0 +1,480 @@
+/**
+ ****************************************************************************************************
+ * @file        fattester.c
+ * @author      姝ｇ偣鍘熷瓙鍥㈤槦(ALIENTEK)
+ * @version     V1.0
+ * @date        2020-04-28
+ * @brief       FATFS 娴嬭瘯浠ｇ爜
+ * @license     Copyright (c) 2020-2032, 骞垮窞甯傛槦缈肩數瀛愮鎶€鏈夐檺鍏徃
+ ****************************************************************************************************
+ * @attention
+ *
+ * 瀹為獙骞冲彴:姝ｇ偣鍘熷瓙 M144Z-M4鏈€灏忕郴缁熸澘STM32F407鐗?
+ * 鍦ㄧ嚎瑙嗛:www.yuanzige.com
+ * 鎶€鏈鍧?www.openedv.com
+ * 鍏徃缃戝潃:www.alientek.com
+ * 璐拱鍦板潃:openedv.taobao.com
+ *
+ * 淇敼璇存槑
+ * V1.0 20200428
+ * 绗竴娆″彂甯?
+ *
+ ****************************************************************************************************
+ */
+
+#include "string.h"
+#include "../../ATK_Middlewares/MALLOC/malloc.h"
+#include "usart.h"
+#include "exfuns.h"
+#include "fattester.h"
+#include "sdio.h"
+
+
+/* 濡傛灉鏀寔鏂囦欢绯荤粺娴嬭瘯 ,鍒欎娇鑳戒互涓嬩唬鐮?*/
+#if USE_FATTESTER == 1
+
+/* FATFS娴嬭瘯缁撴瀯浣?
+ * 涓昏鍖呭惈浜嗘枃浠舵寚閽?鏂囦欢淇℃伅/鐩綍/璇诲啓缂撳瓨绛変俊鎭? 鏂逛究fattester.c
+ * 閲岄潰鐨勬祴璇曞嚱鏁颁娇鐢? 褰撲笉闇€瑕佷娇鐢ㄦ枃浠剁郴缁熸祴璇曞姛鑳芥椂
+ */
+_m_fattester fattester;
+
+
+
+/**
+ * @brief       鍒濆鍖栨枃浠剁郴缁熸祴璇?鐢宠鍐呭瓨)
+ *   @note      璇ュ嚱鏁板繀椤诲湪鎵ц浠讳綍鏂囦欢绯荤粺娴嬭瘯涔嬪墠琚皟鐢ㄤ竴娆?
+ *              璇ュ嚱鏁板彧闇€瑕佽鎴愬姛璋冪敤涓€娆″嵆鍙?鏃犻渶閲嶅璋冪敤!!
+ * @param       鏃?
+ * @retval      鎵ц缁撴灉: 0, 鎴愬姛; 1, 澶辫触;
+ */
+uint8_t mf_init(void)
+{
+    fattester.file = (FIL *)mymalloc(SRAMIN, sizeof(FIL));      /* 涓篺ile鐢宠鍐呭瓨 */
+    fattester.fatbuf = (uint8_t *)mymalloc(SRAMIN, 512);        /* 涓篺attester.fatbuf鐢宠鍐呭瓨 */
+
+    if (fattester.file && fattester.fatbuf)
+    {
+        return 0;   /* 鐢宠鎴愬姛 */
+    }
+    else
+    {
+        mf_free();  /* 閲婃斁鍐呭瓨 */
+        return 1;   /* 鐢宠澶辫触 */
+    }
+}
+
+/**
+ * @brief       閲婃斁鏂囦欢绯荤粺娴嬭瘯鐢宠鐨勫唴瀛?
+ *   @note      璋冪敤瀹岃鍑芥暟浠ュ悗, 鏂囦欢绯荤粺娴嬭瘯鍔熻兘灏嗗け鏁?
+ * @param       鏃?
+ * @retval      鏃?
+ */
+void mf_free(void)
+{
+    myfree(SRAMIN, fattester.file);
+    myfree(SRAMIN, fattester.fatbuf);
+}
+
+/**
+ * @brief       涓虹鐩樻敞鍐屽伐浣滃尯
+ * @param       path : 纾佺洏璺緞锛屾瘮濡?0:"銆?1:"
+ * @param       mt   : 0锛屼笉绔嬪嵆娉ㄥ唽(绋嶅悗娉ㄥ唽); 1锛岀珛鍗虫敞鍐?
+ * @retval      鎵ц缁撴灉(鍙傝FATFS, FRESULT鐨勫畾涔?
+ */
+uint8_t mf_mount(uint8_t *path, uint8_t mt)
+{
+    return f_mount(fs[1], (const TCHAR *)path, mt);
+}
+
+/**
+ * @brief       鎵撳紑鏂囦欢
+ * @param       path : 璺緞 + 鏂囦欢鍚?
+ * @param       mode : 鎵撳紑妯″紡
+ * @retval      鎵ц缁撴灉(鍙傝FATFS, FRESULT鐨勫畾涔?
+ */
+uint8_t mf_open(uint8_t *path, uint8_t mode)
+{
+    uint8_t res;
+    res = f_open(fattester.file, (const TCHAR *)path, mode);    /* 鎵撳紑鏂囦欢 */
+    return res;
+}
+
+/**
+ * @brief       鍏抽棴鏂囦欢
+ * @param       鏃?
+ * @retval      鎵ц缁撴灉(鍙傝FATFS, FRESULT鐨勫畾涔?
+ */
+uint8_t mf_close(void)
+{
+    f_close(fattester.file);
+    return 0;
+}
+
+/**
+ * @brief       璇诲嚭鏁版嵁
+ * @param       len : 璇诲嚭鐨勯暱搴?
+ * @retval      鎵ц缁撴灉(鍙傝FATFS, FRESULT鐨勫畾涔?
+ */
+uint8_t mf_read(uint16_t len)
+{
+    uint16_t i, t;
+    uint8_t res = 0;
+    uint16_t tlen = 0;
+    uint32_t br = 0;
+    printf("\r\nRead fattester.file data is:\r\n");
+
+    for (i = 0; i < len / 512; i++)
+    {
+        res = f_read(fattester.file, fattester.fatbuf, 512, &br);
+
+        if (res)
+        {
+            printf("Read Error:%d\r\n", res);
+            break;
+        }
+        else
+        {
+            tlen += br;
+
+            for (t = 0; t < br; t++)printf("%c", fattester.fatbuf[t]);
+        }
+    }
+
+    if (len % 512)
+    {
+        res = f_read(fattester.file, fattester.fatbuf, len % 512, &br);
+
+        if (res)    /* 璇绘暟鎹嚭閿欎簡 */
+        {
+            printf("\r\nRead Error:%d\r\n", res);
+        }
+        else
+        {
+            tlen += br;
+
+            for (t = 0; t < br; t++)printf("%c", fattester.fatbuf[t]);
+        }
+    }
+
+    if (tlen)printf("\r\nReaded data len:%d\r\n", tlen);    /* 璇诲埌鐨勬暟鎹暱搴?*/
+
+    printf("Read data over\r\n");
+    return res;
+}
+
+/**
+ * @brief       鍐欏叆鏁版嵁
+ * @param       pdata : 鏁版嵁缂撳瓨鍖?
+ * @param       len   : 鍐欏叆闀垮害
+ * @retval      鎵ц缁撴灉(鍙傝FATFS, FRESULT鐨勫畾涔?
+ */
+uint8_t mf_write(uint8_t *pdata, uint16_t len)
+{
+    uint8_t res;
+    uint32_t bw = 0;
+
+    printf("\r\nBegin Write fattester.file...\r\n");
+    printf("Write data len:%d\r\n", len);
+    res = f_write(fattester.file, pdata, len, &bw);
+
+    if (res)
+    {
+        printf("Write Error:%d\r\n", res);
+    }
+    else
+    {
+        printf("Writed data len:%d\r\n", bw);
+    }
+
+    printf("Write data over.\r\n");
+    return res;
+}
+
+/**
+ * @brief       鎵撳紑鐩綍
+ * @param       path : 璺緞
+ * @retval      鎵ц缁撴灉(鍙傝FATFS, FRESULT鐨勫畾涔?
+ */
+uint8_t mf_opendir(uint8_t *path)
+{
+    return f_opendir(&fattester.dir, (const TCHAR *)path);
+}
+
+/**
+ * @brief       鍏抽棴鐩綍
+ * @param       鏃?
+ * @retval      鎵ц缁撴灉(鍙傝FATFS, FRESULT鐨勫畾涔?
+ */
+uint8_t mf_closedir(void)
+{
+    return f_closedir(&fattester.dir);
+}
+
+/**
+ * @brief       鎵撹鍙栨枃浠跺す
+ * @param       鏃?
+ * @retval      鎵ц缁撴灉(鍙傝FATFS, FRESULT鐨勫畾涔?
+ */
+uint8_t mf_readdir(void)
+{
+    uint8_t res;
+    res = f_readdir(&fattester.dir, &fattester.fileinfo);   /* 璇诲彇涓€涓枃浠剁殑淇℃伅 */
+
+    if (res != FR_OK)return res;    /* 鍑洪敊浜?*/
+
+    printf("\r\n fattester.dir info:\r\n");
+
+    printf("fattester.dir.dptr:%d\r\n", fattester.dir.dptr);
+    printf("fattester.dir.obj.id:%d\r\n", fattester.dir.obj.id);
+    printf("fattester.dir.obj.sclust:%d\r\n", fattester.dir.obj.sclust);
+    printf("fattester.dir.obj.objsize:%lld\r\n", fattester.dir.obj.objsize);
+    printf("fattester.dir.clust:%d\r\n", fattester.dir.clust);
+    printf("fattester.dir.sect:%d\r\n", fattester.dir.sect);
+    printf("fattester.dir.blk_ofs:%d\r\n", fattester.dir.blk_ofs);
+
+    printf("\r\n");
+    printf("fattester.file Name is:%s\r\n", fattester.fileinfo.fname);
+    printf("fattester.file Size is:%lld\r\n", fattester.fileinfo.fsize);
+    printf("fattester.file data is:%d\r\n", fattester.fileinfo.fdate);
+    printf("fattester.file time is:%d\r\n", fattester.fileinfo.ftime);
+    printf("fattester.file Attr is:%d\r\n", fattester.fileinfo.fattrib);
+    printf("\r\n");
+    return 0;
+}
+
+/**
+ * @brief       閬嶅巻鏂囦欢
+ * @param       path : 璺緞
+ * @retval      鎵ц缁撴灉(鍙傝FATFS, FRESULT鐨勫畾涔?
+ */
+uint8_t mf_scan_files(uint8_t *path)
+{
+    FRESULT res;
+    res = f_opendir(&fattester.dir, (const TCHAR *)path); /* 鎵撳紑涓€涓洰褰?*/
+
+    if (res == FR_OK)
+    {
+        printf("\r\n");
+
+        while (1)
+        {
+            res = f_readdir(&fattester.dir, &fattester.fileinfo);   /* 璇诲彇鐩綍涓嬬殑涓€涓枃浠?*/
+
+            if (res != FR_OK || fattester.fileinfo.fname[0] == 0)
+            {
+                break;  /* 閿欒浜?鍒版湯灏句簡,閫€鍑?*/
+            }
+            
+            // if (fattester.fileinfo.fname[0] == '.') continue;    /* 蹇界暐涓婄骇鐩綍 */
+            printf("%s/", path);    /* 鎵撳嵃璺緞 */
+            printf("%s\r\n", fattester.fileinfo.fname); /* 鎵撳嵃鏂囦欢鍚?*/
+        }
+    }
+
+    return res;
+}
+
+/**
+ * @brief       鏄剧ず鍓╀綑瀹归噺
+ * @param       path : 璺緞(鐩樼)
+ * @retval      鍓╀綑瀹归噺(瀛楄妭)
+ */
+uint32_t mf_showfree(uint8_t *path)
+{
+    FATFS *fs1;
+    uint8_t res;
+    uint32_t fre_clust = 0, fre_sect = 0, tot_sect = 0;
+    /* 寰楀埌纾佺洏淇℃伅鍙婄┖闂茬皣鏁伴噺 */
+    res = f_getfree((const TCHAR *)path, (DWORD *)&fre_clust, &fs1);
+
+    if (res == 0)
+    {
+        tot_sect = (fs1->n_fatent - 2) * fs1->csize;/* 寰楀埌鎬绘墖鍖烘暟 */
+        fre_sect = fre_clust * fs1->csize;          /* 寰楀埌绌洪棽鎵囧尯鏁?*/
+#if _MAX_SS!=512
+        tot_sect *= fs1->ssize / 512;
+        fre_sect *= fs1->ssize / 512;
+#endif
+
+        if (tot_sect < 20480)   /* 鎬诲閲忓皬浜?0M */
+        {
+            /* Print free space in unit of KB (assuming 512 bytes/sector) */
+            printf("\r\n纾佺洏鎬诲閲?%d KB\r\n"
+                   "鍙敤绌洪棿:%d KB\r\n",
+                   tot_sect >> 1, fre_sect >> 1);
+        }
+        else
+        {
+            /* Print free space in unit of KB (assuming 512 bytes/sector) */
+            printf("\r\n纾佺洏鎬诲閲?%d MB\r\n"
+                   "鍙敤绌洪棿:%d MB\r\n",
+                   tot_sect >> 11, fre_sect >> 11);
+        }
+    }
+
+    return fre_sect;
+}
+
+/**
+ * @brief       鏂囦欢璇诲啓鎸囬拡鍋忕Щ
+ * @param       offset : 鐩稿棣栧湴鍧€鐨勫亸绉婚噺
+ * @retval      鎵ц缁撴灉(鍙傝FATFS, FRESULT鐨勫畾涔?
+ */
+uint8_t mf_lseek(uint32_t offset)
+{
+    return f_lseek(fattester.file, offset);
+}
+
+/**
+ * @brief       璇诲彇鏂囦欢褰撳墠璇诲啓鎸囬拡鐨勪綅缃?
+ * @param       鏃?
+ * @retval      褰撳墠浣嶇疆
+ */
+uint32_t mf_tell(void)
+{
+    return f_tell(fattester.file);
+}
+
+/**
+ * @brief       璇诲彇鏂囦欢澶у皬
+ * @param       鏃?
+ * @retval      鏂囦欢澶у皬
+ */
+uint32_t mf_size(void)
+{
+    return f_size(fattester.file);
+}
+
+/**
+ * @brief       鍒涘缓鐩綍
+ * @param       path : 鐩綍璺緞 + 鍚嶅瓧
+ * @retval      鎵ц缁撴灉(鍙傝FATFS, FRESULT鐨勫畾涔?
+ */
+uint8_t mf_mkdir(uint8_t *path)
+{
+    return f_mkdir((const TCHAR *)path);
+}
+
+/**
+ * @brief       鏍煎紡鍖?
+ * @param       path : 纾佺洏璺緞锛屾瘮濡?0:"銆?1:"
+ * @param       opt  : 妯″紡,FM_FAT,FM_FAT32,FM_EXFAT,FM_ANY绛?..
+ * @param       au   : 绨囧ぇ灏?
+ * @retval      鎵ц缁撴灉(鍙傝FATFS, FRESULT鐨勫畾涔?
+ */
+uint8_t mf_fmkfs(uint8_t *path, uint8_t opt, uint16_t au)
+{
+    return f_mkfs((const TCHAR *)path, opt, 0, 0, _MAX_SS);    /* 鏍煎紡鍖?榛樿鍙傛暟,workbuf,鏈€灏慱MAX_SS澶у皬 */
+}
+
+/**
+ * @brief       鍒犻櫎鏂囦欢/鐩綍
+ * @param       path : 鏂囦欢/鐩綍璺緞+鍚嶅瓧
+ * @retval      鎵ц缁撴灉(鍙傝FATFS, FRESULT鐨勫畾涔?
+ */
+uint8_t mf_unlink(uint8_t *path)
+{
+    return  f_unlink((const TCHAR *)path);
+}
+
+/**
+ * @brief       淇敼鏂囦欢/鐩綍鍚嶅瓧(濡傛灉鐩綍涓嶅悓,杩樺彲浠ョЩ鍔ㄦ枃浠跺摝!)
+ * @param       oldname : 涔嬪墠鐨勫悕瀛?
+ * @param       newname : 鏂板悕瀛?
+ * @retval      鎵ц缁撴灉(鍙傝FATFS, FRESULT鐨勫畾涔?
+ */
+uint8_t mf_rename(uint8_t *oldname, uint8_t *newname)
+{
+    return  f_rename((const TCHAR *)oldname, (const TCHAR *)newname);
+}
+
+/**
+ * @brief       鑾峰彇鐩樼(纾佺洏鍚嶅瓧)
+ * @param       path : 纾佺洏璺緞锛屾瘮濡?0:"銆?1:"
+ * @retval      鎵ц缁撴灉(鍙傝FATFS, FRESULT鐨勫畾涔?
+ */
+void mf_getlabel(uint8_t *path)
+{
+    uint8_t buf[20];
+    uint32_t sn = 0;
+    uint8_t res;
+    res = f_getlabel ((const TCHAR *)path, (TCHAR *)buf, (DWORD *)&sn);
+
+    if (res == FR_OK)
+    {
+        printf("\r\n纾佺洏%s 鐨勭洏绗︿负:%s\r\n", path, buf);
+        printf("纾佺洏%s 鐨勫簭鍒楀彿:%X\r\n\r\n", path, sn);
+    }
+    else
+    {
+        printf("\r\n鑾峰彇澶辫触锛岄敊璇爜:%X\r\n", res);
+    }
+}
+
+/**
+ * @brief       璁剧疆鐩樼锛堢鐩樺悕瀛楋級锛屾渶闀?1涓瓧绗︼紒锛侊紝鏀寔鏁板瓧鍜屽ぇ鍐欏瓧姣嶇粍鍚堜互鍙婃眽瀛楃瓑
+ * @param       path : 纾佺洏鍙?鍚嶅瓧锛屾瘮濡?0:ALIENTEK"銆?1:OPENEDV"
+ * @retval      鎵ц缁撴灉(鍙傝FATFS, FRESULT鐨勫畾涔?
+ */
+void mf_setlabel(uint8_t *path)
+{
+    uint8_t res;
+    res = f_setlabel ((const TCHAR *)path);
+
+    if (res == FR_OK)
+    {
+        printf("\r\n纾佺洏鐩樼璁剧疆鎴愬姛:%s\r\n", path);
+    }
+    else printf("\r\n纾佺洏鐩樼璁剧疆澶辫触锛岄敊璇爜:%X\r\n", res);
+}
+
+/**
+ * @brief       浠庢枃浠堕噷闈㈣鍙栦竴娈靛瓧绗︿覆
+ * @param       size : 瑕佽鍙栫殑闀垮害
+ * @retval      鎵ц缁撴灉(鍙傝FATFS, FRESULT鐨勫畾涔?
+ */
+void mf_gets(uint16_t size)
+{
+    TCHAR *rbuf;
+    rbuf = f_gets((TCHAR *)fattester.fatbuf, size, fattester.file);
+
+    if (*rbuf == 0)return  ; /* 娌℃湁鏁版嵁璇诲埌 */
+    else
+    {
+        printf("\r\nThe String Readed Is:%s\r\n", rbuf);
+    }
+}
+
+/**
+ * @brief       鍐欎竴涓瓧绗﹀埌鏂囦欢(闇€瑕?FF_USE_STRFUNC >= 1)
+ * @param       c : 瑕佸啓鍏ョ殑瀛楃
+ * @retval      鎵ц缁撴灉(鍙傝FATFS, FRESULT鐨勫畾涔?
+ */
+uint8_t mf_putc(uint8_t c)
+{
+    return f_putc((TCHAR)c, fattester.file);
+}
+
+/**
+ * @brief       鍐欏瓧绗︿覆鍒版枃浠?闇€瑕?FF_USE_STRFUNC >= 1)
+ * @param       str : 瑕佸啓鍏ョ殑瀛楃涓?
+ * @retval      鎵ц缁撴灉(鍙傝FATFS, FRESULT鐨勫畾涔?
+ */
+uint8_t mf_puts(uint8_t *str)
+{
+    return f_puts((TCHAR *)str, fattester.file);
+}
+
+#endif
+
+
+
+
+
+
+
+
+
+
+

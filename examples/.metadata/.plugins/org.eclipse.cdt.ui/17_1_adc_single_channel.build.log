@@ -1,0 +1,10 @@
+10:44:09 **** Incremental Build of configuration Debug for project 17_1_adc_single_channel ****
+make -j16 all 
+arm-none-eabi-size  17_1_adc_single_channel.elf 
+   text	   data	    bss	    dec	    hex	filename
+  46060	    116	   2356	  48532	   bd94	17_1_adc_single_channel.elf
+Finished building: default.size.stdout
+ 
+
+10:44:10 Build Finished. 0 errors, 0 warnings. (took 1s.131ms)
+

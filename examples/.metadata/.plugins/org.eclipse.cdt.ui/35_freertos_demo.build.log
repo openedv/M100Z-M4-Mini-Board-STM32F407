@@ -1,0 +1,10 @@
+09:50:02 **** Incremental Build of configuration Debug for project 35_freertos_demo ****
+make -j16 all 
+arm-none-eabi-size  35_freertos_demo.elf 
+   text	   data	    bss	    dec	    hex	filename
+  74752	  65792	  75568	 216112	  34c30	35_freertos_demo.elf
+Finished building: default.size.stdout
+ 
+
+09:50:04 Build Finished. 0 errors, 0 warnings. (took 1s.820ms)
+

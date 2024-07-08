@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<section name="ExternalProjectImportWizard">
+		<item key="WizardProjectsImportPage.STORE_NESTED_PROJECTS" value="true"/>
+	</section>
+	<section name="SmartImportWizard">
+		<item key="SmartImportRootWizardPage.STORE_HIDE_ALREADY_OPEN" value="false"/>
+		<item key="SmartImportRootWizardPage.STORE_CLOSE_IMPORTED" value="false"/>
+		<item key="SmartImportRootWizardPage.STORE_NESTED_PROJECTS" value="true"/>
+		<item key="SmartImportRootWizardPage.STORE_CONFIGURE_NATURES" value="true"/>
+		<list key="org.eclipse.ui.internal.wizards.datatransfer.SmartImportRootWizardPage.knownSources">
+			<item value="F:\CubeIDE\h503_Git\m100-m4-mini-board-stm32f407\examples\10_oled"/>
+			<item value="F:\CubeIDE\h503_Git\m100-m4-mini-board-stm32f407\examples\33_1_iap_bootloader"/>
+			<item value="F:\CubeIDE\h503_Git\m100-m4-mini-board-stm32f407\examples\31_1_enable_Julia"/>
+			<item value="F:\CubeIDE\h503_Git\m100-m4-mini-board-stm32f407\examples\32_atkncr"/>
+			<item value="F:\CubeIDE\h503_Git\m100-m4-mini-board-stm32f407\examples\30_2_dsp_fft"/>
+			<item value="F:\CubeIDE\h503_Git\m100-m4-mini-board-stm32f407\examples\30_1_dsp_basicmath"/>
+			<item value="F:\CubeIDE\h503_Git\m100-m4-mini-board-stm32f407\examples\25_malloc"/>
+			<item value="F:\CubeIDE\h503_Git\m100-m4-mini-board-stm32f407\examples\23_flash_eeprom"/>
+			<item value="F:\CubeIDE\h503_Git\m100-m4-mini-board-stm32f407\examples\22_touch"/>
+			<item value="F:\CubeIDE\h503_Git\m100-m4-mini-board-stm32f407\examples\21_spi"/>
+			<item value="F:\CubeIDE\h503_Git\m100-m4-mini-board-stm32f407\examples\20_iic"/>
+			<item value="F:\CubeIDE\h503_Git\m100-m4-mini-board-stm32f407\examples\19_3_dac_sine_wave"/>
+			<item value="F:\CubeIDE\h503_Git\m100-m4-mini-board-stm32f407\examples\19_1_dac_output"/>
+			<item value="F:\CubeIDE\h503_Git\m100-m4-mini-board-stm32f407\examples\18_adc_temperature"/>
+			<item value="F:\CubeIDE\h503_Git\m100-m4-mini-board-stm32f407\examples\17_3_adc_dma_multi_channel"/>
+			<item value="F:\CubeIDE\h503_Git\m100-m4-mini-board-stm32f407\examples\17_2_adc_dma_single_channel"/>
+			<item value="F:\CubeIDE\h503_Git\m100-m4-mini-board-stm32f407\examples\17_1_adc_single_channel"/>
+			<item value="F:\CubeIDE\h503_Git\m100-m4-mini-board-stm32f407\examples\16_dma"/>
+			<item value="F:\CubeIDE\h503_Git\m100-m4-mini-board-stm32f407\examples\15_1_lowpower_pvd"/>
+			<item value="F:\CubeIDE\h503_Git\m100-m4-mini-board-stm32f407\examples\13_rtc"/>
+			<item value="F:\CubeIDE\h503_Git\m100-m4-mini-board-stm32f407\examples\12_usmart"/>
+			<item value="F:\CubeIDE\h503_Git\m100-m3-mini-board-stm32f103\examples\09_4_atim_pwm_in"/>
+			<item value="F:\CubeIDE\h503_Git\m100-m4-mini-board-stm32f407\examples\09_4_atim_pwm_in"/>
+			<item value="F:\CubeIDE\h503_Git\m100-m4-mini-board-stm32f407\examples\09_3_atim_cplm_pwm"/>
+			<item value="F:\CubeIDE\h503_Git\m100-m4-mini-board-stm32f407\examples\09_2_atim_compare"/>
+			<item value="F:\CubeIDE\h503_Git\m100-m4-mini-board-stm32f407\examples\09_1_atim_npwm"/>
+			<item value="F:\CubeIDE\h503_Git\m100-m4-mini-board-stm32f407\examples\08_4_gtim_count"/>
+			<item value="F:\CubeIDE\h503_Git\m100-m4-mini-board-stm32f407\examples\08_3_gtim_capture"/>
+			<item value="F:\CubeIDE\h503_Git\m100-m4-mini-board-stm32f407\examples\08_2_gtim_pwm"/>
+			<item value="F:\CubeIDE\h503_Git\m100-m4-mini-board-stm32f407\examples\08_1_gtim_interrupt"/>
+			<item value="F:\CubeIDE\h503_Git\m100-m4-mini-board-stm32f407\examples\07_btim"/>
+			<item value="F:\CubeIDE\h503_Git\m100-m4-mini-board-stm32f407\examples\06_wwdg"/>
+			<item value="F:\CubeIDE\h503_Git\m100-m4-mini-board-stm32f407\examples\05_iwdg"/>
+		</list>
+	</section>
+	<section name="ChooseWorkspaceDialogSettings">
+		<item key="DIALOG_X_ORIGIN" value="209"/>
+		<item key="DIALOG_Y_ORIGIN" value="236"/>
+	</section>
+	<section name="WORKBENCH_SETTINGS">
+		<list key="ENABLED_TRANSFERS">
+		</list>
+	</section>
+</section>

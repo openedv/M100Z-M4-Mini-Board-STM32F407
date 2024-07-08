@@ -1,0 +1,538 @@
+/**
+ ****************************************************************************************************
+ * @file        exfuns.c
+ * @author      姝ｇ偣鍘熷瓙鍥㈤槦(ALIENTEK)
+ * @version     V1.0
+ * @date        2020-04-28
+ * @brief       FATFS 鎵╁睍浠ｇ爜
+ * @license     Copyright (c) 2020-2032, 骞垮窞甯傛槦缈肩數瀛愮鎶€鏈夐檺鍏徃
+ ****************************************************************************************************
+ * @attention
+ *
+ * 瀹為獙骞冲彴:姝ｇ偣鍘熷瓙 M144Z-M4鏈€灏忕郴缁熸澘STM32F407鐗?
+ * 鍦ㄧ嚎瑙嗛:www.yuanzige.com
+ * 鎶€鏈鍧?www.openedv.com
+ * 鍏徃缃戝潃:www.alientek.com
+ * 璐拱鍦板潃:openedv.taobao.com
+ *
+ * 淇敼璇存槑
+ * V1.0 20200428
+ * 绗竴娆″彂甯?
+ *
+ ****************************************************************************************************
+ */
+
+#include "string.h"
+#include "../../ATK_Middlewares/MALLOC/malloc.h"
+#include "usart.h"
+#include "exfuns.h"
+#include "fattester.h"
+
+
+#define FILE_MAX_TYPE_NUM       7       /* 鏈€澶欶ILE_MAX_TYPE_NUM涓ぇ绫?*/
+#define FILE_MAX_SUBT_NUM       7       /* 鏈€澶欶ILE_MAX_SUBT_NUM涓皬绫?*/
+
+/* 鏂囦欢绫诲瀷鍒楄〃 */
+char *const FILE_TYPE_TBL[FILE_MAX_TYPE_NUM][FILE_MAX_SUBT_NUM] =
+{
+    {"BIN"},            /* BIN鏂囦欢 */
+    {"LRC"},            /* LRC鏂囦欢 */
+    {"NES", "SMS"},     /* NES/SMS鏂囦欢 */
+    {"TXT", "C", "H"},  /* 鏂囨湰鏂囦欢 */
+    {"WAV", "MP3", "OGG", "FLAC", "AAC", "WMA", "MID"},   /* 鏀寔鐨勯煶涔愭枃浠?*/
+    {"BMP", "JPG", "JPEG", "GIF"},  /* 鍥剧墖鏂囦欢 */
+    {"AVI"},            /* 瑙嗛鏂囦欢 */
+};
+    
+/******************************************************************************************/
+/* 鍏叡鏂囦欢鍖? 浣跨敤malloc鐨勬椂鍊?*/
+
+/* 閫昏緫纾佺洏宸ヤ綔鍖?鍦ㄨ皟鐢ㄤ换浣旻ATFS鐩稿叧鍑芥暟涔嬪墠,蹇呴』鍏堢粰fs鐢宠鍐呭瓨) */
+FATFS *fs[_VOLUMES];
+
+/******************************************************************************************/
+
+
+/**
+ * @brief       涓篹xfuns鐢宠鍐呭瓨
+ * @param       鏃?
+ * @retval      0, 鎴愬姛; 1, 澶辫触.
+ */
+uint8_t exfuns_init(void)
+{
+    uint8_t i;
+    uint8_t res = 0;
+
+    for (i = 0; i < _VOLUMES; i++)
+    {
+        fs[i] = (FATFS *)mymalloc(SRAMIN, sizeof(FATFS));   /* 涓虹鐩榠宸ヤ綔鍖虹敵璇峰唴瀛?*/
+
+        if (!fs[i])break;
+    }
+    
+#if USE_FATTESTER == 1  /* 濡傛灉浣胯兘浜嗘枃浠剁郴缁熸祴璇?*/
+    res = mf_init();    /* 鍒濆鍖栨枃浠剁郴缁熸祴璇?鐢宠鍐呭瓨) */
+#endif
+    
+    if (i == _VOLUMES && res == 0)
+    {
+        return 0;   /* 鐢宠鏈変竴涓け璐?鍗冲け璐? */
+    }
+    else 
+    {
+        return 1;
+    }
+}
+
+/**
+ * @brief       灏嗗皬鍐欏瓧姣嶈浆涓哄ぇ鍐欏瓧姣?濡傛灉鏄暟瀛?鍒欎繚鎸佷笉鍙?
+ * @param       c : 瑕佽浆鎹㈢殑瀛楁瘝
+ * @retval      杞崲鍚庣殑瀛楁瘝,澶у啓
+ */
+uint8_t exfuns_char_upper(uint8_t c)
+{
+    if (c < 'A')return c;   /* 鏁板瓧,淇濇寔涓嶅彉. */
+
+    if (c >= 'a')
+    {
+        return c - 0x20;    /* 鍙樹负澶у啓. */
+    }
+    else
+    {
+        return c;           /* 澶у啓,淇濇寔涓嶅彉 */
+    }
+}
+
+/**
+ * @brief       鎶ュ憡鏂囦欢鐨勭被鍨?
+ * @param       fname : 鏂囦欢鍚?
+ * @retval      鏂囦欢绫诲瀷
+ *   @arg       0XFF , 琛ㄧず鏃犳硶璇嗗埆鐨勬枃浠剁被鍨嬬紪鍙?
+ *   @arg       鍏朵粬 , 楂樺洓浣嶈〃绀烘墍灞炲ぇ绫? 浣庡洓浣嶈〃绀烘墍灞炲皬绫?
+ */
+uint8_t exfuns_file_type(char *fname)
+{
+    uint8_t tbuf[5];
+    char *attr = 0;   /* 鍚庣紑鍚?*/
+    uint8_t i = 0, j;
+
+    while (i < 250)
+    {
+        i++;
+
+        if (*fname == '\0')break;   /* 鍋忕Щ鍒颁簡鏈€鍚庝簡. */
+
+        fname++;
+    }
+
+    if (i == 250)return 0XFF;   /* 閿欒鐨勫瓧绗︿覆. */
+
+    for (i = 0; i < 5; i++)     /* 寰楀埌鍚庣紑鍚?*/
+    {
+        fname--;
+
+        if (*fname == '.')
+        {
+            fname++;
+            attr = fname;
+            break;
+        }
+    }
+
+    if (attr == 0)return 0XFF;
+
+    strcpy((char *)tbuf, (const char *)attr);       /* copy */
+
+    for (i = 0; i < 4; i++)tbuf[i] = exfuns_char_upper(tbuf[i]);    /* 鍏ㄩ儴鍙樹负澶у啓 */
+
+    for (i = 0; i < FILE_MAX_TYPE_NUM; i++)         /* 澶х被瀵规瘮 */
+    {
+        for (j = 0; j < FILE_MAX_SUBT_NUM; j++)     /* 瀛愮被瀵规瘮 */
+        {
+            if (*FILE_TYPE_TBL[i][j] == 0)break;    /* 姝ょ粍宸茬粡娌℃湁鍙姣旂殑鎴愬憳浜? */
+
+            if (strcmp((const char *)FILE_TYPE_TBL[i][j], (const char *)tbuf) == 0) /* 鎵惧埌浜?*/
+            {
+                return (i << 4) | j;
+            }
+        }
+    }
+
+    return 0XFF;    /* 娌℃壘鍒?*/
+}
+
+/**
+ * @brief       鑾峰彇纾佺洏鍓╀綑瀹归噺
+ * @param       pdrv : 纾佺洏缂栧彿("0:"~"9:")
+ * @param       total: 鎬诲閲?(KB)
+ * @param       free : 鍓╀綑瀹归噺 (KB)
+ * @retval      0, 姝ｅ父; 鍏朵粬, 閿欒浠ｇ爜
+ */
+uint8_t exfuns_get_free(char *pdrv, uint32_t *total, uint32_t *free)
+{
+    FATFS *fs1;
+    uint8_t res;
+    uint32_t fre_clust = 0, fre_sect = 0, tot_sect = 0;
+    
+    /* 寰楀埌纾佺洏淇℃伅鍙婄┖闂茬皣鏁伴噺 */
+    res = (uint32_t)f_getfree((const TCHAR *)pdrv, (DWORD *)&fre_clust, &fs1);
+
+    if (res == 0)
+    {
+        tot_sect = (fs1->n_fatent - 2) * fs1->csize;    /* 寰楀埌鎬绘墖鍖烘暟 */
+        fre_sect = fre_clust * fs1->csize;              /* 寰楀埌绌洪棽鎵囧尯鏁?*/
+
+#if _MAX_SS != 512  /* 鎵囧尯澶у皬涓嶆槸512瀛楄妭,鍒欒浆鎹负512瀛楄妭 */
+        tot_sect *= fs1->ssize / 512;
+        fre_sect *= fs1->ssize / 512;
+#endif
+        *total = tot_sect >> 1;     /* 鍗曚綅涓篕B */
+        *free = fre_sect >> 1;      /* 鍗曚綅涓篕B */
+    }
+
+    return res;
+}
+
+/**
+ * @brief       鏂囦欢澶嶅埗
+ *   @note      灏唒src鏂囦欢,copy鍒皃dst.
+ *              娉ㄦ剰: 鏂囦欢澶у皬涓嶈瓒呰繃4GB.
+ *
+ * @param       fcpymsg : 鍑芥暟鎸囬拡, 鐢ㄤ簬瀹炵幇鎷疯礉鏃剁殑淇℃伅鏄剧ず
+ *                  pname:鏂囦欢/鏂囦欢澶瑰悕
+ *                  pct:鐧惧垎姣?
+ *                  mode:
+ *                      bit0 : 鏇存柊鏂囦欢鍚?
+ *                      bit1 : 鏇存柊鐧惧垎姣攑ct
+ *                      bit2 : 鏇存柊鏂囦欢澶?
+ *                      鍏朵粬 : 淇濈暀
+ *                  杩斿洖鍊? 0, 姝ｅ父; 1, 寮哄埗閫€鍑?
+ *
+ * @param       psrc    : 婧愭枃浠?
+ * @param       pdst    : 鐩爣鏂囦欢
+ * @param       totsize : 鎬诲ぇ灏?褰搕otsize涓?鐨勬椂鍊?琛ㄧず浠呬粎涓哄崟涓枃浠舵嫹璐?
+ * @param       cpdsize : 宸插鍒朵簡鐨勫ぇ灏?
+ * @param       fwmode  : 鏂囦欢鍐欏叆妯″紡
+ *   @arg       0: 涓嶈鐩栧師鏈夌殑鏂囦欢
+ *   @arg       1: 瑕嗙洊鍘熸湁鐨勬枃浠?
+ *
+ * @retval      鎵ц缁撴灉
+ *   @arg       0   , 姝ｅ父
+ *   @arg       0XFF, 寮哄埗閫€鍑?
+ *   @arg       鍏朵粬, 閿欒浠ｇ爜
+ */
+uint8_t exfuns_file_copy(uint8_t(*fcpymsg)(uint8_t *pname, uint8_t pct, uint8_t mode), uint8_t *psrc, uint8_t *pdst, 
+                                      uint32_t totsize, uint32_t cpdsize, uint8_t fwmode)
+{
+    uint8_t res;
+    uint16_t br = 0;
+    uint16_t bw = 0;
+    FIL *fsrc = 0;
+    FIL *fdst = 0;
+    uint8_t *fbuf = 0;
+    uint8_t curpct = 0;
+    unsigned long long lcpdsize = cpdsize;
+    
+    fsrc = (FIL *)mymalloc(SRAMIN, sizeof(FIL));    /* 鐢宠鍐呭瓨 */
+    fdst = (FIL *)mymalloc(SRAMIN, sizeof(FIL));
+    fbuf = (uint8_t *)mymalloc(SRAMIN, 8192);
+
+    if (fsrc == NULL || fdst == NULL || fbuf == NULL)
+    {
+        res = 100;  /* 鍓嶉潰鐨勫€肩暀缁檉atfs */
+    }
+    else
+    {
+        if (fwmode == 0)
+        {
+            fwmode = FA_CREATE_NEW;     /* 涓嶈鐩?*/
+        }
+        else 
+        {
+            fwmode = FA_CREATE_ALWAYS;  /* 瑕嗙洊瀛樺湪鐨勬枃浠?*/
+        }
+        
+        res = f_open(fsrc, (const TCHAR *)psrc, FA_READ | FA_OPEN_EXISTING);        /* 鎵撳紑鍙鏂囦欢 */
+
+        if (res == 0)res = f_open(fdst, (const TCHAR *)pdst, FA_WRITE | fwmode);    /* 绗竴涓墦寮€鎴愬姛,鎵嶅紑濮嬫墦寮€绗簩涓?*/
+
+        if (res == 0)           /* 涓や釜閮芥墦寮€鎴愬姛浜?*/
+        {
+            if (totsize == 0)   /* 浠呬粎鏄崟涓枃浠跺鍒?*/
+            {
+                totsize = fsrc->obj.objsize;
+                lcpdsize = 0;
+                curpct = 0;
+            }
+            else
+            {
+                curpct = (lcpdsize * 100) / totsize;            /* 寰楀埌鏂扮櫨鍒嗘瘮 */
+            }
+            
+            fcpymsg(psrc, curpct, 0X02);                        /* 鏇存柊鐧惧垎姣?*/
+
+            while (res == 0)    /* 寮€濮嬪鍒?*/
+            {
+                res = f_read(fsrc, fbuf, 8192, (UINT *)&br);    /* 婧愬ご璇诲嚭512瀛楄妭 */
+
+                if (res || br == 0)break;
+
+                res = f_write(fdst, fbuf, (UINT)br, (UINT *)&bw);/* 鍐欏叆鐩殑鏂囦欢 */
+                lcpdsize += bw;
+
+                if (curpct != (lcpdsize * 100) / totsize)       /* 鏄惁闇€瑕佹洿鏂扮櫨鍒嗘瘮 */
+                {
+                    curpct = (lcpdsize * 100) / totsize;
+
+                    if (fcpymsg(psrc, curpct, 0X02))            /* 鏇存柊鐧惧垎姣?*/
+                    {
+                        res = 0XFF;                             /* 寮哄埗閫€鍑?*/
+                        break;
+                    }
+                }
+
+                if (res || bw < br)break;
+            }
+
+            f_close(fsrc);
+            f_close(fdst);
+        }
+    }
+
+    myfree(SRAMIN, fsrc); /* 閲婃斁鍐呭瓨 */
+    myfree(SRAMIN, fdst);
+    myfree(SRAMIN, fbuf);
+    return res;
+}
+
+/**
+ * @brief       寰楀埌璺緞涓嬬殑鏂囦欢澶?
+ *   @note      鍗虫妸璺緞鍏ㄩ儴鍘绘帀, 鍙暀涓嬫枃浠跺す鍚嶅瓧.
+ * @param       pname : 璇︾粏璺緞
+ * @retval      0   , 璺緞灏辨槸涓嵎鏍囧彿.
+ *              鍏朵粬, 鏂囦欢澶瑰悕瀛楅鍦板潃
+ */
+uint8_t *exfuns_get_src_dname(uint8_t *pname)
+{
+    uint16_t temp = 0;
+
+    while (*pname != 0)
+    {
+        pname++;
+        temp++;
+    }
+
+    if (temp < 4)return 0;
+
+    while ((*pname != 0x5c) && (*pname != 0x2f))pname--;    /* 杩借堪鍒板€掓暟绗竴涓?\"鎴栬€?/"澶?*/
+
+    return ++pname;
+}
+
+/**
+ * @brief       寰楀埌鏂囦欢澶瑰ぇ灏?
+ *   @note      娉ㄦ剰: 鏂囦欢澶瑰ぇ灏忎笉瑕佽秴杩?GB.
+ * @param       pname : 璇︾粏璺緞
+ * @retval      0   , 鏂囦欢澶瑰ぇ灏忎负0, 鎴栬€呰鍙栬繃绋嬩腑鍙戠敓浜嗛敊璇?
+ *              鍏朵粬, 鏂囦欢澶瑰ぇ灏?
+ */
+uint32_t exfuns_get_folder_size(uint8_t *fdname)
+{
+#define MAX_PATHNAME_DEPTH  512 + 1     /* 鏈€澶х洰鏍囨枃浠惰矾寰?鏂囦欢鍚嶆繁搴?*/
+    uint8_t res = 0;
+    DIR *fddir = 0;         /* 鐩綍 */
+    FILINFO *finfo = 0;     /* 鏂囦欢淇℃伅 */
+    uint8_t *pathname = 0;  /* 鐩爣鏂囦欢澶硅矾寰?鏂囦欢鍚?*/
+    uint16_t pathlen = 0;   /* 鐩爣璺緞闀垮害 */
+    uint32_t fdsize = 0;
+
+    fddir = (DIR *)mymalloc(SRAMIN, sizeof(DIR));   /* 鐢宠鍐呭瓨 */
+    finfo = (FILINFO *)mymalloc(SRAMIN, sizeof(FILINFO));
+
+    if (fddir == NULL || finfo == NULL)res = 100;
+
+    if (res == 0)
+    {
+        pathname = mymalloc(SRAMIN, MAX_PATHNAME_DEPTH);
+
+        if (pathname == NULL)res = 101;
+
+        if (res == 0)
+        {
+            pathname[0] = 0;
+            strcat((char *)pathname, (const char *)fdname);     /* 澶嶅埗璺緞 */
+            res = f_opendir(fddir, (const TCHAR *)fdname);      /* 鎵撳紑婧愮洰褰?*/
+
+            if (res == 0)   /* 鎵撳紑鐩綍鎴愬姛 */
+            {
+                while (res == 0)   /* 寮€濮嬪鍒舵枃浠跺す閲岄潰鐨勪笢涓?*/
+                {
+                    res = f_readdir(fddir, finfo);                  /* 璇诲彇鐩綍涓嬬殑涓€涓枃浠?*/
+
+                    if (res != FR_OK || finfo->fname[0] == 0)break; /* 閿欒浜?鍒版湯灏句簡,閫€鍑?*/
+
+                    if (finfo->fname[0] == '.')continue;            /* 蹇界暐涓婄骇鐩綍 */
+
+                    if (finfo->fattrib & 0X10)   /* 鏄瓙鐩綍(鏂囦欢灞炴€?0X20,褰掓。鏂囦欢;0X10,瀛愮洰褰?) */
+                    {
+                        pathlen = strlen((const char *)pathname);   /* 寰楀埌褰撳墠璺緞鐨勯暱搴?*/
+                        strcat((char *)pathname, (const char *)"/");/* 鍔犳枩鏉?*/
+                        strcat((char *)pathname, (const char *)finfo->fname);   /* 婧愯矾寰勫姞涓婂瓙鐩綍鍚嶅瓧 */
+                        //printf("\r\nsub folder:%s\r\n",pathname);      /* 鎵撳嵃瀛愮洰褰曞悕 */
+                        fdsize += exfuns_get_folder_size(pathname);     /* 寰楀埌瀛愮洰褰曞ぇ灏?閫掑綊璋冪敤 */
+                        pathname[pathlen] = 0;                          /* 鍔犲叆缁撴潫绗?*/
+                    }
+                    else
+                    {
+                        fdsize += finfo->fsize; /* 闈炵洰褰?鐩存帴鍔犱笂鏂囦欢鐨勫ぇ灏?*/
+                    }
+                }
+            }
+
+            myfree(SRAMIN, pathname);
+        }
+    }
+
+    myfree(SRAMIN, fddir);
+    myfree(SRAMIN, finfo);
+
+    if (res)
+    {
+        return 0;
+    }
+    else 
+    {
+        return fdsize;
+    }
+}
+
+/**
+ * @brief       鏂囦欢澶瑰鍒?
+ *   @note      灏唒src鏂囦欢澶? 鎷疯礉鍒皃dst鏂囦欢澶?
+ *              娉ㄦ剰: 鏂囦欢澶у皬涓嶈瓒呰繃4GB.
+ *
+ * @param       fcpymsg : 鍑芥暟鎸囬拡, 鐢ㄤ簬瀹炵幇鎷疯礉鏃剁殑淇℃伅鏄剧ず
+ *                  pname:鏂囦欢/鏂囦欢澶瑰悕
+ *                  pct:鐧惧垎姣?
+ *                  mode:
+ *                      bit0 : 鏇存柊鏂囦欢鍚?
+ *                      bit1 : 鏇存柊鐧惧垎姣攑ct
+ *                      bit2 : 鏇存柊鏂囦欢澶?
+ *                      鍏朵粬 : 淇濈暀
+ *                  杩斿洖鍊? 0, 姝ｅ父; 1, 寮哄埗閫€鍑?
+ *
+ * @param       psrc    : 婧愭枃浠跺す
+ * @param       pdst    : 鐩爣鏂囦欢澶?
+ *   @note      蹇呴』褰㈠"X:"/"X:XX"/"X:XX/XX"涔嬬被鐨? 涓旇纭涓婁竴绾ф枃浠跺す瀛樺湪
+ *
+ * @param       totsize : 鎬诲ぇ灏?褰搕otsize涓?鐨勬椂鍊?琛ㄧず浠呬粎涓哄崟涓枃浠舵嫹璐?
+ * @param       cpdsize : 宸插鍒朵簡鐨勫ぇ灏?
+ * @param       fwmode  : 鏂囦欢鍐欏叆妯″紡
+ *   @arg       0: 涓嶈鐩栧師鏈夌殑鏂囦欢
+ *   @arg       1: 瑕嗙洊鍘熸湁鐨勬枃浠?
+ *
+ * @retval      鎵ц缁撴灉
+ *   @arg       0   , 姝ｅ父
+ *   @arg       0XFF, 寮哄埗閫€鍑?
+ *   @arg       鍏朵粬, 閿欒浠ｇ爜
+ */
+uint8_t exfuns_folder_copy(uint8_t(*fcpymsg)(uint8_t *pname, uint8_t pct, uint8_t mode), uint8_t *psrc, uint8_t *pdst, 
+                           uint32_t *totsize, uint32_t *cpdsize, uint8_t fwmode)
+{
+#define MAX_PATHNAME_DEPTH 512 + 1  /* 鏈€澶х洰鏍囨枃浠惰矾寰?鏂囦欢鍚嶆繁搴?*/
+    uint8_t res = 0;
+    DIR *srcdir = 0;    /* 婧愮洰褰?*/
+    DIR *dstdir = 0;    /* 婧愮洰褰?*/
+    FILINFO *finfo = 0; /* 鏂囦欢淇℃伅 */
+    uint8_t *fn = 0;    /* 闀挎枃浠跺悕 */
+
+    uint8_t *dstpathname = 0;   /* 鐩爣鏂囦欢澶硅矾寰?鏂囦欢鍚?*/
+    uint8_t *srcpathname = 0;   /* 婧愭枃浠跺す璺緞+鏂囦欢鍚?*/
+
+    uint16_t dstpathlen = 0;    /* 鐩爣璺緞闀垮害 */
+    uint16_t srcpathlen = 0;    /* 婧愯矾寰勯暱搴?*/
+
+
+    srcdir = (DIR *)mymalloc(SRAMIN, sizeof(DIR));  /* 鐢宠鍐呭瓨 */
+    dstdir = (DIR *)mymalloc(SRAMIN, sizeof(DIR));
+    finfo = (FILINFO *)mymalloc(SRAMIN, sizeof(FILINFO));
+
+    if (srcdir == NULL || dstdir == NULL || finfo == NULL)res = 100;
+
+    if (res == 0)
+    {
+        dstpathname = mymalloc(SRAMIN, MAX_PATHNAME_DEPTH);
+        srcpathname = mymalloc(SRAMIN, MAX_PATHNAME_DEPTH);
+
+        if (dstpathname == NULL || srcpathname == NULL)res = 101;
+
+        if (res == 0)
+        {
+            dstpathname[0] = 0;
+            srcpathname[0] = 0;
+            strcat((char *)srcpathname, (const char *)psrc);    /* 澶嶅埗鍘熷婧愭枃浠惰矾寰?*/
+            strcat((char *)dstpathname, (const char *)pdst);    /* 澶嶅埗鍘熷鐩爣鏂囦欢璺緞 */
+            res = f_opendir(srcdir, (const TCHAR *)psrc);       /* 鎵撳紑婧愮洰褰?*/
+
+            if (res == 0)   /* 鎵撳紑鐩綍鎴愬姛 */
+            {
+                strcat((char *)dstpathname, (const char *)"/"); /* 鍔犲叆鏂滄潬 */
+                fn = exfuns_get_src_dname(psrc);
+
+                if (fn == 0)   /* 鍗锋爣鎷疯礉 */
+                {
+                    dstpathlen = strlen((const char *)dstpathname);
+                    dstpathname[dstpathlen] = psrc[0];  /* 璁板綍鍗锋爣 */
+                    dstpathname[dstpathlen + 1] = 0;    /* 缁撴潫绗?*/
+                }
+                else strcat((char *)dstpathname, (const char *)fn); /* 鍔犳枃浠跺悕 */
+
+                fcpymsg(fn, 0, 0X04);   /* 鏇存柊鏂囦欢澶瑰悕 */
+                res = f_mkdir((const TCHAR *)dstpathname);  /* 濡傛灉鏂囦欢澶瑰凡缁忓瓨鍦?灏变笉鍒涘缓.濡傛灉涓嶅瓨鍦ㄥ氨鍒涘缓鏂扮殑鏂囦欢澶? */
+
+                if (res == FR_EXIST)res = 0;
+
+                while (res == 0)   /* 寮€濮嬪鍒舵枃浠跺す閲岄潰鐨勪笢涓?*/
+                {
+                    res = f_readdir(srcdir, finfo);         /* 璇诲彇鐩綍涓嬬殑涓€涓枃浠?*/
+
+                    if (res != FR_OK || finfo->fname[0] == 0)break; /* 閿欒浜?鍒版湯灏句簡,閫€鍑?*/
+
+                    if (finfo->fname[0] == '.')continue;    /* 蹇界暐涓婄骇鐩綍 */
+
+                    fn = (uint8_t *)finfo->fname;           /* 寰楀埌鏂囦欢鍚?*/
+                    dstpathlen = strlen((const char *)dstpathname); /* 寰楀埌褰撳墠鐩爣璺緞鐨勯暱搴?*/
+                    srcpathlen = strlen((const char *)srcpathname); /* 寰楀埌婧愯矾寰勯暱搴?*/
+
+                    strcat((char *)srcpathname, (const char *)"/"); /* 婧愯矾寰勫姞鏂滄潬 */
+
+                    if (finfo->fattrib & 0X10)  /* 鏄瓙鐩綍(鏂囦欢灞炴€?0X20,褰掓。鏂囦欢;0X10,瀛愮洰褰?) */
+                    {
+                        strcat((char *)srcpathname, (const char *)fn);  /* 婧愯矾寰勫姞涓婂瓙鐩綍鍚嶅瓧 */
+                        res = exfuns_folder_copy(fcpymsg, srcpathname, dstpathname, totsize, cpdsize, fwmode);   /* 鎷疯礉鏂囦欢澶?*/
+                    }
+                    else     /* 闈炵洰褰?*/
+                    {
+                        strcat((char *)dstpathname, (const char *)"/"); /* 鐩爣璺緞鍔犳枩鏉?*/
+                        strcat((char *)dstpathname, (const char *)fn);  /* 鐩爣璺緞鍔犳枃浠跺悕 */
+                        strcat((char *)srcpathname, (const char *)fn);  /* 婧愯矾寰勫姞鏂囦欢鍚?*/
+                        fcpymsg(fn, 0, 0X01);       /* 鏇存柊鏂囦欢鍚?*/
+                        res = exfuns_file_copy(fcpymsg, srcpathname, dstpathname, *totsize, *cpdsize, fwmode);  /* 澶嶅埗鏂囦欢 */
+                        *cpdsize += finfo->fsize;   /* 澧炲姞涓€涓枃浠跺ぇ灏?*/
+                    }
+
+                    srcpathname[srcpathlen] = 0;    /* 鍔犲叆缁撴潫绗?*/
+                    dstpathname[dstpathlen] = 0;    /* 鍔犲叆缁撴潫绗?*/
+                }
+            }
+
+            myfree(SRAMIN, dstpathname);
+            myfree(SRAMIN, srcpathname);
+        }
+    }
+
+    myfree(SRAMIN, srcdir);
+    myfree(SRAMIN, dstdir);
+    myfree(SRAMIN, finfo);
+    return res;
+}

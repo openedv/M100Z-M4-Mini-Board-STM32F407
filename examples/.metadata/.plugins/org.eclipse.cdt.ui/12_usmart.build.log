@@ -1,0 +1,10 @@
+09:39:42 **** Incremental Build of configuration Debug for project 12_usmart ****
+make -j16 all 
+arm-none-eabi-size  12_usmart.elf 
+   text	   data	    bss	    dec	    hex	filename
+  53784	    420	   2356	  56560	   dcf0	12_usmart.elf
+Finished building: default.size.stdout
+ 
+
+09:39:44 Build Finished. 0 errors, 0 warnings. (took 1s.172ms)
+

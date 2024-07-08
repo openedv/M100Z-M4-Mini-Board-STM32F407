@@ -1,0 +1,10 @@
+17:51:18 **** Incremental Build of configuration Debug for project 08_4_gtim_count ****
+make -j16 all 
+arm-none-eabi-size  08_4_gtim_count.elf 
+   text	   data	    bss	    dec	    hex	filename
+  19228	    116	   2260	  21604	   5464	08_4_gtim_count.elf
+Finished building: default.size.stdout
+ 
+
+17:51:19 Build Finished. 0 errors, 0 warnings. (took 1s.202ms)
+

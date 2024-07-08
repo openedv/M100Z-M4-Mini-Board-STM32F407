@@ -1,0 +1,23 @@
+14:45:39 **** Incremental Build of configuration Debug for project 11_tftlcd_mcu ****
+make -j16 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F407xx -c -I../Core/Inc -I../../../libraries/Drivers/STM32F4xx_HAL_Driver/Inc -I../../../libraries/Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../../../libraries/Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../../../libraries/Drivers/CMSIS/Include -I../../../libraries/Drivers/SYSTEM -I../BSP/LED -I../BSP/KEY -I../BSP/LCD -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc "../BSP/LCD/lcd.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F407xx -c -I../Core/Inc -I../../../libraries/Drivers/STM32F4xx_HAL_Driver/Inc -I../../../libraries/Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../../../libraries/Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../../../libraries/Drivers/CMSIS/Include -I../../../libraries/Drivers/SYSTEM -I../BSP/LED -I../BSP/KEY -I../BSP/LCD -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"BSP/LCD/lcd.d" -MT"BSP/LCD/lcd.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "BSP/LCD/lcd.o"
+../BSP/LCD/lcd.c:857:6: error: conflicting types for 'lcd_show_char'; have 'void(uint16_t,  uint16_t,  unsigned char,  uint8_t,  uint8_t,  uint16_t)' {aka 'void(short unsigned int,  short unsigned int,  unsigned char,  unsigned char,  unsigned char,  short unsigned int)'}
+  857 | void lcd_show_char(uint16_t x, uint16_t y, unsigned char chr, uint8_t size, uint8_t mode, uint16_t color)
+      |      ^~~~~~~~~~~~~
+In file included from ../BSP/LCD/lcd.c:22:
+../BSP/LCD/lcd.h:162:6: note: previous declaration of 'lcd_show_char' with type 'void(uint16_t,  uint16_t,  char,  uint8_t,  uint8_t,  uint16_t)' {aka 'void(short unsigned int,  short unsigned int,  char,  unsigned char,  unsigned char,  short unsigned int)'}
+  162 | void lcd_show_char(uint16_t x, uint16_t y, char chr, uint8_t size, uint8_t mode, uint16_t color);                       /* Display a character */
+      |      ^~~~~~~~~~~~~
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:102:3: error: 'g_point_color' undeclared (first use in this function)
+  102 |   g_point_color = RED;
+      |   ^~~~~~~~~~~~~
+../Core/Src/main.c:102:3: note: each undeclared identifier is reported only once for each function it appears in
+make: *** [BSP/LCD/subdir.mk:19: BSP/LCD/lcd.o] Error 1
+make: *** Waiting for unfinished jobs....
+make: *** [Core/Src/subdir.mk:43: Core/Src/main.o] Error 1
+"make -j16 all" terminated with exit code 2. Build might be incomplete.
+
+14:45:41 Build Failed. 5 errors, 0 warnings. (took 1s.748ms)
+

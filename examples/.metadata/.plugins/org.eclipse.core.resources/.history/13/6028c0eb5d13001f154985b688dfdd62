@@ -1,0 +1,13 @@
+../BSP/NORFLASH/norflash.c:38:6:norflash_init	3
+../BSP/NORFLASH/norflash.c:71:13:norflash_wait_busy	2
+../BSP/NORFLASH/norflash.c:81:6:norflash_write_enable	1
+../BSP/NORFLASH/norflash.c:93:13:norflash_send_address	2
+../BSP/NORFLASH/norflash.c:109:9:norflash_read_sr	5
+../BSP/NORFLASH/norflash.c:146:6:norflash_write_sr	5
+../BSP/NORFLASH/norflash.c:180:10:norflash_read_id	1
+../BSP/NORFLASH/norflash.c:203:6:norflash_read	2
+../BSP/NORFLASH/norflash.c:226:13:norflash_write_page	2
+../BSP/NORFLASH/norflash.c:252:13:norflash_write_nocheck	4
+../BSP/NORFLASH/norflash.c:297:6:norflash_write	8
+../BSP/NORFLASH/norflash.c:373:6:norflash_erase_chip	1
+../BSP/NORFLASH/norflash.c:388:6:norflash_erase_sector	1

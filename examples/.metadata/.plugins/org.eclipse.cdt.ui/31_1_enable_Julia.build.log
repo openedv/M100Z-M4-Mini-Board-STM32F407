@@ -1,0 +1,10 @@
+16:06:07 **** Incremental Build of configuration Debug for project 31_1_enable_Julia ****
+make -j16 all 
+arm-none-eabi-size  31_1_enable_Julia.elf 
+   text	   data	    bss	    dec	    hex	filename
+  58100	    484	   2620	  61204	   ef14	31_1_enable_Julia.elf
+Finished building: default.size.stdout
+ 
+
+16:06:17 Build Finished. 0 errors, 0 warnings. (took 10s.617ms)
+

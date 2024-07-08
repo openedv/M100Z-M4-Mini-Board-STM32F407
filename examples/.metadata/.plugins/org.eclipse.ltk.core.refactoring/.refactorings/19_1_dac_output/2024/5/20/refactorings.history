@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;19_1_dac_output/11_tftlcd.ioc&apos; to &apos;19_1_dac_output.ioc&apos;" description="Rename resource &apos;11_tftlcd.ioc&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="11_tftlcd.ioc" name="19_1_dac_output.ioc" stamp="1715839515552" updateReferences="true"/>
+</session>

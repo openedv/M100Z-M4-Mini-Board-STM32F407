@@ -1,0 +1,10 @@
+16:45:53 **** Incremental Build of configuration Debug for project 05_iwdg ****
+make -j16 all 
+arm-none-eabi-size  05_iwdg.elf 
+   text	   data	    bss	    dec	    hex	filename
+  14528	    116	   2196	  16840	   41c8	05_iwdg.elf
+Finished building: default.size.stdout
+ 
+
+16:45:54 Build Finished. 0 errors, 0 warnings. (took 1s.138ms)
+

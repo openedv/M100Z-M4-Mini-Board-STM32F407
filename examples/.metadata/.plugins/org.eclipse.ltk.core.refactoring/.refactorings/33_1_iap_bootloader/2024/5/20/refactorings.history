@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;33_1_iap_bootloader/23_flash_eeprom.ioc&apos; to &apos;33_1_iap_bootloader.ioc&apos;" description="Rename resource &apos;23_flash_eeprom.ioc&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="23_flash_eeprom.ioc" name="33_1_iap_bootloader.ioc" stamp="1715679297991" updateReferences="true"/>
+</session>

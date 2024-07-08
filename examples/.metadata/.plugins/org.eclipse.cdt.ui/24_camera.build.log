@@ -1,0 +1,24 @@
+10:39:33 **** Incremental Build of configuration Debug for project 24_camera ****
+make -j16 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F407xx -c -I../Core/Inc -I../../../libraries/Drivers/STM32F4xx_HAL_Driver/Inc -I../../../libraries/Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../../../libraries/Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../../../libraries/Drivers/CMSIS/Include -I../BSP/LED -I../BSP/KEY -I../BSP/LCD -I../BSP/OV2640 -I../BSP/DELAY -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'jpeg_test':
+../Core/Src/main.c:230:38: warning: format '%d' expects argument of type 'int', but argument 2 has type 'uint32_t' {aka 'long unsigned int'} [-Wformat=]
+  230 |             printf("g_jpeg_data_len:%d\r\n", g_jpeg_data_len << 2);                 /* Print JPEG data length */
+      |                                     ~^       ~~~~~~~~~~~~~~~~~~~~
+      |                                      |                       |
+      |                                      int                     uint32_t {aka long unsigned int}
+      |                                     %ld
+arm-none-eabi-gcc -o "24_camera.elf" @"objects.list"   -mcpu=cortex-m4 -T"F:\CubeIDE\h503_Git\m100-m4-mini-board-stm32f407\examples\24_camera\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="24_camera.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: 24_camera.elf
+ 
+arm-none-eabi-size  24_camera.elf 
+arm-none-eabi-objdump -h -S 24_camera.elf  > "24_camera.list"
+   text	   data	    bss	    dec	    hex	filename
+  56132	    172	 129588	 185892	  2d624	24_camera.elf
+Finished building: default.size.stdout
+ 
+Finished building: 24_camera.list
+ 
+
+10:39:43 Build Finished. 0 errors, 1 warnings. (took 10s.551ms)
+

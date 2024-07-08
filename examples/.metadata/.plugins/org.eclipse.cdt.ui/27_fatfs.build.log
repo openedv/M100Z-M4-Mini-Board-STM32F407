@@ -1,0 +1,10 @@
+19:20:15 **** Incremental Build of configuration Debug for project 27_fatfs ****
+make -j16 all 
+arm-none-eabi-size  27_fatfs.elf 
+   text	   data	    bss	    dec	    hex	filename
+ 109640	    996	 108656	 219292	  3589c	27_fatfs.elf
+Finished building: default.size.stdout
+ 
+
+19:20:16 Build Finished. 0 errors, 0 warnings. (took 1s.289ms)
+

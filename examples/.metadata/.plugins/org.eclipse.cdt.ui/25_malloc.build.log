@@ -1,0 +1,10 @@
+18:02:34 **** Build of configuration Debug for project 25_malloc ****
+make -j16 all 
+arm-none-eabi-size  25_malloc.elf 
+   text	   data	    bss	    dec	    hex	filename
+  66236	  65792	  56792	 188820	  2e194	25_malloc.elf
+Finished building: default.size.stdout
+ 
+
+18:02:35 Build Finished. 0 errors, 0 warnings. (took 1s.171ms)
+

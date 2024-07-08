@@ -1,0 +1,10 @@
+20:06:04 **** Incremental Build of configuration Debug for project 30_2_dsp_fft ****
+make -j16 all 
+arm-none-eabi-size  30_2_dsp_fft.elf 
+   text	   data	    bss	    dec	    hex	filename
+  69556	    484	  14652	  84692	  14ad4	30_2_dsp_fft.elf
+Finished building: default.size.stdout
+ 
+
+20:06:05 Build Finished. 0 errors, 0 warnings. (took 1s.242ms)
+

@@ -1,0 +1,10 @@
+14:16:40 **** Incremental Build of configuration Debug for project 19_1_dac_output ****
+make -j16 all 
+arm-none-eabi-size  19_1_dac_output.elf 
+   text	   data	    bss	    dec	    hex	filename
+  47424	    120	   2376	  49920	   c300	19_1_dac_output.elf
+Finished building: default.size.stdout
+ 
+
+14:16:41 Build Finished. 0 errors, 0 warnings. (took 1s.130ms)
+

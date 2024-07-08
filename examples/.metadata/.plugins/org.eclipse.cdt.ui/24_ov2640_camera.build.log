@@ -1,0 +1,10 @@
+16:03:32 **** Incremental Build of configuration Debug for project 24_ov2640_camera ****
+make -j16 all 
+arm-none-eabi-size  24_ov2640_camera.elf 
+   text	   data	    bss	    dec	    hex	filename
+  69080	    536	 129608	 199224	  30a38	24_ov2640_camera.elf
+Finished building: default.size.stdout
+ 
+
+16:03:33 Build Finished. 0 errors, 0 warnings. (took 1s.223ms)
+
